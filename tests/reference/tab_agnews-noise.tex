@@ -1,0 +1,33 @@
+\begin{table}[H]
+\centering
+\caption{AG News gradient-noise attribution under 20\% symmetric training-label noise.
+Values are mean \(\pm\) SD over five seeds. Drop is peak minus final accuracy
+in pp; peak epoch is the epoch attaining peak accuracy. We select the best fixed action retrospectively. Fixed controls use
+one noise level throughout training; uniform random samples from
+\(\{0,0.005,0.01\}\) every 200 steps.}
+\label{tab:agnews-noise}
+\footnotesize
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lcccc@{}}
+\toprule
+Policy & Peak (\%) & Final (\%) & Drop (pp) & Peak epoch \\
+\midrule
+\multicolumn{5}{@{}l}{\textit{Initial comparison}} \\
+Neutral, \(\sigma=0\)
+& \(93.19\pm0.19\) & \(90.79\pm0.17\)
+& \(2.40\pm0.28\) & \(2.00\pm0.00\) \\
+AEES
+& \(93.47\pm0.09\) & \(93.45\pm0.10\)
+& \(0.01\pm0.02\) & \(4.60\pm0.89\) \\
+\addlinespace[2pt]
+\multicolumn{5}{@{}l}{\textit{Attribution controls}} \\
+Best fixed, \(\sigma=0.005\)
+& \(93.55\pm0.07\) & \(93.47\pm0.06\)
+& \(0.09\pm0.08\) & \(4.00\pm0.71\) \\
+Uniform random
+& \(93.58\pm0.07\) & \(93.58\pm0.06\)
+& \(0.01\pm0.01\) & \(4.80\pm0.45\) \\
+\bottomrule
+\end{tabular*}
+\end{table}

@@ -1,0 +1,21 @@
+\begin{table}[H]
+\centering
+\caption{Peak CIFAR-100 validation accuracy for every tested fixed
+learning-rate multiplier and AEES. Values are mean $\pm$ SD over five seeds.}
+\label{tab:appendix-all-fixed}
+\scriptsize
+\setlength{\tabcolsep}{3.0pt}
+\renewcommand{\arraystretch}{1.03}
+\begin{tabular}{llcccc}
+\toprule
+Noise & Optimizer & Fixed $0.5$ & Fixed $1.0$ & Fixed $2.0$ & AEES \\
+\midrule
+Asym. 20\% & AdamW & $57.94\pm0.43$ & $58.45\pm0.37$ & $56.08\pm0.66$ & $61.69\pm0.67$ \\
+Asym. 20\% & SGD+M & $57.47\pm0.61$ & $57.29\pm0.89$ & $55.62\pm0.64$ & $62.54\pm0.28$ \\
+Sym. 20\% & AdamW & $58.80\pm0.46$ & $58.59\pm0.46$ & $56.07\pm0.36$ & $62.19\pm0.90$ \\
+Sym. 20\% & SGD+M & $57.45\pm0.65$ & $57.04\pm0.71$ & $55.18\pm0.78$ & $62.48\pm0.50$ \\
+Sym. 40\% & AdamW & $52.48\pm0.74$ & $51.68\pm0.62$ & $48.84\pm1.03$ & $55.02\pm1.12$ \\
+Sym. 40\% & SGD+M & $50.85\pm0.73$ & $50.07\pm0.81$ & $47.30\pm1.28$ & $55.63\pm0.99$ \\
+\bottomrule
+\end{tabular}
+\end{table}

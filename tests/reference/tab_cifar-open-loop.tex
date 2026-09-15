@@ -1,0 +1,52 @@
+\begin{table}[thbp]
+\centering
+\caption{CIFAR-100 peak validation accuracy for AEES versus uniform-random
+(UR) and frequency-matched (FM) open-loop controls. Values are mean
+\(\pm\) SD over five paired seeds. \(\Delta\) is AEES minus control accuracy
+in pp; brackets give 95\% paired percentile-bootstrap intervals. Wins count
+positive paired differences. Asym. and Sym. denote asymmetric and symmetric
+training-label noise.}
+\label{tab:cifar-open-loop}
+\footnotesize
+\setlength{\tabcolsep}{2.2pt}
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lllcccc@{}}
+\toprule
+Noise & Optimizer & Control & AEES (\%) & Control (\%) &
+\(\Delta\) [95\% interval] & Wins \\
+\midrule
+\multirow{4}{*}{Asym. 20\%}
+& \multirow{2}{*}{AdamW}
+& UR & \multirow{2}{*}{\(61.7\pm0.7\)}
+& \(61.2\pm2.2\) & \(0.51\,[-0.89,2.05]\) & \(3/5\) \\
+& & FM & & \(61.7\pm1.5\) & \(0.03\,[-1.04,1.17]\) & \(2/5\) \\
+\cmidrule(lr){2-7}
+& \multirow{2}{*}{SGD+M}
+& UR & \multirow{2}{*}{\(62.5\pm0.3\)}
+& \(63.1\pm0.9\) & \(-0.55\,[-1.13,0.01]\) & \(2/5\) \\
+& & FM & & \(62.1\pm0.6\) & \(0.47\,[-0.08,0.91]\) & \(4/5\) \\
+\midrule
+\multirow{4}{*}{Sym. 20\%}
+& \multirow{2}{*}{AdamW}
+& UR & \multirow{2}{*}{\(62.2\pm0.9\)}
+& \(62.6\pm0.5\) & \(-0.40\,[-1.32,0.52]\) & \(2/5\) \\
+& & FM & & \(61.0\pm1.1\) & \(1.16\,[-0.16,2.57]\) & \(4/5\) \\
+\cmidrule(lr){2-7}
+& \multirow{2}{*}{SGD+M}
+& UR & \multirow{2}{*}{\(62.5\pm0.5\)}
+& \(62.7\pm0.8\) & \(-0.21\,[-1.22,0.71]\) & \(2/5\) \\
+& & FM & & \(62.6\pm0.6\) & \(-0.13\,[-0.91,0.49]\) & \(3/5\) \\
+\midrule
+\multirow{4}{*}{Sym. 40\%}
+& \multirow{2}{*}{AdamW}
+& UR & \multirow{2}{*}{\(55.0\pm1.1\)}
+& \(53.0\pm1.4\) & \(1.99\,[1.55,2.60]\) & \(5/5\) \\
+& & FM & & \(54.5\pm1.0\) & \(0.53\,[-0.30,1.22]\) & \(4/5\) \\
+\cmidrule(lr){2-7}
+& \multirow{2}{*}{SGD+M}
+& UR & \multirow{2}{*}{\(55.6\pm1.0\)}
+& \(55.7\pm1.4\) & \(-0.09\,[-1.29,1.08]\) & \(3/5\) \\
+& & FM & & \(53.9\pm1.7\) & \(1.72\,[0.32,3.12]\) & \(4/5\) \\
+\bottomrule
+\end{tabular*}
+\end{table}

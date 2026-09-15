@@ -1,48 +1,13 @@
-# Virtual environments
 .venv/
-
-# Python bytecode and caches
 __pycache__/
+*.py[cod]
 .pytest_cache/
-.mypy_cache/
-.ruff_cache/
-.coverage
-coverage.xml
-.ipynb_checkpoints/
-
-# Local editor and OS files
-.DS_Store
-.idea/
-.vscode/
-*.log
-*.aux
-*.pdf
-
-# Generated dataset contents
-data/*
-!data/.gitkeep
-
-# Generated experiment results
-results/*
-!results/.gitkeep
-!results/README.md
-
-# Environment / secrets
-.env
-
-# Hugging Face cache (datasets, models, hub)
+*.egg-info/
 .hf_cache/
-
-*.egg-info
-
-archived_results/**
-!archived_results/README.md
-!archived_results/.gitkeep
-
-reproduced_artifacts/**
-!reproduced_artifacts/README.md
-!reproduced_artifacts/.gitkeep
-!reproduced_artifacts/tables/
-!reproduced_artifacts/tables/.gitkeep
-!reproduced_artifacts/figures/
-!reproduced_artifacts/figures/.gitkeep
+.mpl-cache/
+data/
+results/
+archived_results/
+reproduced_artifacts/
+dist/
+.DS_Store

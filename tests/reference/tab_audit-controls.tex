@@ -1,0 +1,34 @@
+\begin{table}[t]
+\centering
+\caption{Attribution questions addressed by comparisons between AEES and its
+controls. All policies share the base schedule, training horizon, episode
+boundaries, and intervention implementation. AEES uses target-run
+training-loss feedback; the controls exclude it. The rows describe
+complementary comparisons, with no assumed performance ordering.}
+\label{tab:audit-controls}
+\small
+\setlength{\tabcolsep}{3pt}
+\renewcommand{\arraystretch}{1.08}
+\begin{tabularx}{\linewidth}{@{}>{\raggedright\arraybackslash}p{0.19\linewidth}
+>{\raggedright\arraybackslash}p{0.33\linewidth}
+>{\raggedright\arraybackslash}X@{}}
+\toprule
+Control & Schedule construction & Question addressed \\
+\midrule
+Neutral & Identity action throughout training.
+& Does AEES improve on neutral training? \\
+\addlinespace[3pt]
+Best fixed & One candidate action throughout training; the best is selected
+retrospectively for reporting.
+& Can a tested static action reproduce AEES's gain? \\
+\addlinespace[3pt]
+Uniform random & Independent uniform action draws at episode boundaries.
+& Can episodic variation without feedback reproduce the gain? \\
+\addlinespace[3pt]
+Frequency matched & Precomputed, shuffled action sequence matching donor AEES
+frequencies.
+& Can an allocation transferred from other runs reproduce the gain without
+target-run feedback? \\
+\bottomrule
+\end{tabularx}
+\end{table}

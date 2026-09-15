@@ -1,0 +1,16 @@
+{
+  "tab:agnews-noise": {
+    "30": {
+      "paper": "0.01",
+      "generated": "0.00",
+      "meaning": "AG News uniform-random mean drop (pp)"
+    }
+  },
+  "tab:appendix-agnews-controls": {
+    "31": {
+      "paper": "0.01",
+      "generated": "0.00",
+      "meaning": "AG News uniform-random mean drop (pp)"
+    }
+  }
+}

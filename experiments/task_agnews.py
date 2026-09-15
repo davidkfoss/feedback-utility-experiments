@@ -24,8 +24,8 @@ os.environ.setdefault("TRANSFORMERS_CACHE", str(
 if str(PROJECT_ROOT) not in sys.path:
     sys.path.insert(0, str(PROJECT_ROOT))
 
-from experiments.task_sst2 import (  # noqa: E402
-    DEFAULT_CONFIG as SST2_DEFAULT_CONFIG,
+from experiments.nlp_common import (  # noqa: E402
+    DEFAULT_CONFIG as NLP_DEFAULT_CONFIG,
     ExperimentConfig,
     build_lr_scheduler,
     build_method_components,
@@ -49,7 +49,7 @@ AGNEWS_SPLIT_SEED = 42
 AGNEWS_NUM_LABELS = 4
 
 DEFAULT_CONFIG: dict[str, object] = {
-    **SST2_DEFAULT_CONFIG,
+    **NLP_DEFAULT_CONFIG,
     "task_name": "agnews",
     "dataset_name": "AG News",
     "tokenized_dataset_dir": str(PROJECT_ROOT / "data" / "agnews_tokenized"),

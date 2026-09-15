@@ -1,0 +1,22 @@
+name: Paper checks
+on: [push, pull_request, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+      - run: uv sync --frozen --extra dev
+      - run: uv run --frozen python -m pytest -q
+      - name: Reproduce published paper release
+        run: |
+          if uv run --frozen python -c "import json; assert json.load(open('paper/release.json'))['url']"; then
+            make paper-reproduce
+            make paper-check
+          else
+            echo 'Full reproduction ran locally; waiting for release URL.'
+          fi

@@ -1,217 +1,63 @@
-# AEES Thesis Experiments
+# Isolating Feedback Utility in Adaptive Optimizer Scheduling
 
-This repository contains the experiment runners, archived result artifacts, and result-processing scripts used for the thesis on **Adaptive Episodic Exploration Scheduling (AEES)** — a small per-axis bandit that adapts learning-rate multiplier and gradient-noise std per training episode on top of a standard optimizer backbone.
+Code and released experiment outputs for the ICONIP 2026 paper. We compare AEES with fixed, uniform-random, and cross-fitted frequency-matched controls to isolate the additional benefit of training-loss feedback.
 
-The reusable AEES implementation is **not** in this repository. It is published on PyPI as [`pulseopt`](https://pypi.org/project/pulseopt/) and maintained at [`davidkfoss/pulseopt`](https://github.com/davidkfoss/pulseopt). This repository pulls it in as a normal dependency.
+The paper covers CIFAR-100 (ResNet-18, AdamW and SGD with momentum) and AG News (DistilBERT). All accuracy comparisons use paired seeds 0–4. The controller and adaptive optimizer implementation belongs to [pulseopt](https://github.com/davidkfoss/pulseopt); this repository provides experiment runners, controls, audits, and paper reproduction.
 
-## Setup
+## Reproduce figures and tables
 
-Python 3.11 is required. The commands below use a standard virtual environment; the experiment examples use `uv run python`, but the same runners can also be launched with `python` inside an activated environment.
+Use Python 3.11 and `uv`. The lockfile fixes the analysis environment; training libraries are optional.
 
-```bash
-python3.11 -m venv .venv
-source .venv/bin/activate
-pip install -e .[dev]
+```sh
+uv sync --frozen --extra dev
+make paper-reproduce
+make paper-check
 ```
 
-`pip install -e .` declares this directory's dependencies, including `pulseopt>=0.1.5`; the project itself ships no reusable Python package.
+The paper results bundle is prepared locally under `dist/`; its publication status and checksum are recorded in `paper/release.json`. Until published, pass the bundle explicitly on another machine:
 
-## Running an experiment
-
-Each runner exposes its full flag set under `--help`:
-
-```bash
-uv run python experiments/task_cifar100.py --help
-uv run python experiments/task_sst2.py --help
-uv run python experiments/task_agnews.py --help
+```sh
+make paper-reproduce ARCHIVE=/path/to/iconip2026-results-v1.zip
 ```
 
-A run writes a `RunResult` JSON under `results/` via `experiments/utils/results.py`. The runners cache HuggingFace datasets/models under `.hf_cache/` and pre-tokenized datasets under `data/`; both directories are gitignored.
+After publication, the same target downloads the configured release asset and verifies the ZIP and all 205 files. If results are already present, it verifies and reuses them. The archive stores every run at its root, including the RunPod controls. Reproduction does not download datasets or model weights and does not run training.
 
-Key flags exposed by all runners, with the full list available through `--help`:
-
-- `--lr-candidates`, `--noise-candidates` — comma-separated candidate values; single-candidate axes are treated as fixed constants and skip controller creation.
-- `--structured-control-mode {independent,conditional}`
-- `--context-mode {none,trend}` — context modes for contextual controller variants.
-- `--episode-length`, `--reward-instability-lambda`, `--reward-clip-{min,max}`
-- `--lr-scheduler {none,cosine,linear,warmup_linear}`, `--scheduler-t-max`, `--warmup-epochs`
-
-CIFAR-specific flags include `--label-noise-type {none,symmetric,asymmetric}`, `--label-noise-rate`, and `--control-mode {baseline,adaptive,random}`. SST-2 and AG News use `--method {AdamW,AdaptiveScheduler,RandomScheduler}`.
-
-### NLP caching and local-only runs
-
-The SST-2 and AG News runners use HuggingFace datasets, tokenizers, and pretrained DistilBERT weights. Dataset/model files are cached under `.hf_cache/`, while pre-tokenized datasets can be saved under `data/`.
-
-For runtime measurements, downloads and tokenization should be completed before the measured training run. The recommended pattern is:
-
-1. Run `--pretokenize-only` with `--cache-dir` and `--tokenized-dataset-dir` to download/cache the dataset and tokenizer files and save the tokenized dataset.
-2. Run a short non-local smoke job with the same `--cache-dir` and `--tokenized-dataset-dir` to download/cache the pretrained model weights and verify that the runner works end-to-end.
-3. Run the actual measured jobs with the same `--cache-dir`, `--tokenized-dataset-dir`, and `--local-files-only`.
-
-Example for AG News:
-
-```bash
-uv run python experiments/task_agnews.py \
-  --pretokenize-only \
-  --epochs 1 \
-  --batch-size 16 \
-  --max-length 128 \
-  --lr 5e-5 \
-  --weight-decay 0.01 \
-  --cache-dir .hf_cache \
-  --tokenized-dataset-dir data/agnews_tokenized
+```sh
+make paper-artifacts  # existing results, offline
+make paper-tables
+make paper-plots
+make paper-audit
+uv run --frozen python -m scripts.paper.reproduce --artifact tab:cifar-ur-fixed
 ```
 
-```bash
-uv run python experiments/task_agnews.py \
-  --method AdamW \
-  --epochs 1 \
-  --batch-size 16 \
-  --max-length 128 \
-  --lr 5e-5 \
-  --weight-decay 0.01 \
-  --lr-scheduler none \
-  --cache-dir .hf_cache \
-  --tokenized-dataset-dir data/agnews_tokenized \
-  --seed 0 \
-  --output results/agnews_smoke_seed0.json
-```
-
-```bash
-uv run python experiments/task_agnews.py \
-  --method AdamW \
-  --epochs 1 \
-  --batch-size 16 \
-  --max-length 128 \
-  --lr 5e-5 \
-  --weight-decay 0.01 \
-  --lr-scheduler none \
-  --cache-dir .hf_cache \
-  --tokenized-dataset-dir data/agnews_tokenized \
-  --local-files-only \
-  --seed 0 \
-  --output results/agnews_local_smoke_seed0.json
-```
-
-For SST-2, use the same sequence with `experiments/task_sst2.py` and `--tokenized-dataset-dir data/sst2_tokenized`.
-
-This sequence separates one-time dataset download, tokenization, and model-weight download from runtime-sensitive training runs. It also makes repeated experiments faster and avoids unnecessary repeated requests to the HuggingFace Hub. The measured compute-overhead experiments should use the cached HuggingFace files via `--cache-dir`, the saved tokenized datasets via `--tokenized-dataset-dir`, and `--local-files-only` to avoid network access during the run.
-
-### Example commands
-
-Representative clean CIFAR-100 AdamW baseline:
-
-```bash
-uv run python experiments/task_cifar100.py \
-  --control-mode baseline \
-  --optimizer AdamW \
-  --label-noise-type none \
-  --seed 0
-```
-
-Representative noisy CIFAR-100 AEES-LR run:
-
-```bash
-uv run python experiments/task_cifar100.py \
-  --control-mode adaptive \
-  --optimizer AdamW \
-  --label-noise-type symmetric \
-  --label-noise-rate 0.4 \
-  --episode-length 200 \
-  --lr-candidates 0.5,1.0,2.0 \
-  --noise-candidates 0.0 \
-  --seed 0
-```
-
-Representative SST-2 linear decay AdamW baseline:
-
-```bash
-uv run python experiments/task_sst2.py \
-  --method AdamW \
-  --lr-scheduler warmup_linear \ # warmup_epochs are 0 by default
-  --seed 0
-```
-
-Representative AG News noise-only AEES run:
-
-```bash
-uv run python experiments/task_agnews.py \
-  --method AdaptiveScheduler \
-  --lr-scheduler warmup_linear \ # warmup_epochs are 0 by default
-  --lr-candidates 1.0 \
-  --noise-candidates 0.0,0.005,0.01 \
-  --label-noise-rate 0.2 \
-  --episode-length 200 \
-  --seed 0
-```
-
-These commands are representative single-run examples. The thesis tables are generated from archived result artifacts rather than by launching experiments from this README.
-
-## Tables and plots
-
-`scripts/tables/` and `scripts/plots/` regenerate the thesis tables and figures by reading archived run-result JSON files. These scripts are read-only consumers: they do not launch training runs.
-
-The archived result files are the authoritative source for the numerical tables reported in the thesis. Re-running training with the same seeds should reproduce the same qualitative behavior and similar aggregate results, but exact trajectory-level or bitwise reproduction across machines is not guaranteed.
-
-### Artifact reproduction
-
-The archived result bundle is distributed as a GitHub release asset:
-
-<https://github.com/davidkfoss/aees-thesis-experiments/releases/tag/v0.1.1>
-
-Download and extract the archive at the repository root so that the directory is named `archived_results/`.
-
-Three top-level directories support regenerating the thesis and ICONIP 2026 paper-submission artifacts: `archived_results/`, `generated_artifacts/`, and `reproduced_artifacts/` (see the Layout section for what each holds). The reporting scripts read from `archived_results/` — the canonical archived bundle, which is distinct from the live `results/` tree that the experiment runners write to.
-
-Both table and figure scripts run directly (`uv run python ...`) using archived-results defaults: they read from `archived_results/` and write to `reproduced_artifacts/{tables,figures}/...`. Pass `--runs-root`/`--out-dir` only to override the defaults. A few figure scripts produce one figure per variant and accept an optional `--setting`/`--noise-setting` selector — omit it to emit all variants. To regenerate everything at once, run `make artifacts` (or `make plots` / `make tables`). See [`archived_results/README.md`](archived_results/README.md) for the expected bundle layout.
-
-## Tests
-
-Tests covering the experiment-side `RunResult` runtime-metric derivation:
-
-```bash
-uv run pytest tests/test_runtime_metrics.py
-```
-
-The remaining CIFAR-100 attribution controls (uniform-random and
-leave-one-seed-out frequency-matched), five-GPU launcher, resume behavior, and
-aggregation workflow are documented in
-[`docs/cifar_attribution_controls.md`](docs/cifar_attribution_controls.md).
-
-Library-side tests for controllers, episode management, rewards, and optimizer wrapping live with the `pulseopt` source repository.
+Outputs go to `reproduced_artifacts/iconip2026/`: two PDF/PNG figures, nine LaTeX tables, full-precision `analysis.json`, `seed_outcomes.csv`, control audits, and generation metadata. Figure filenames match the submitted paper. Table layouts and captions follow `paper_1215.zip`; numerical cells are generated from unrounded seed outcomes. Two occurrences of one AG News rounding discrepancy are explicitly documented.
 
 ## Layout
 
-- `experiments/task_*.py` — three thesis runners: CIFAR-100, SST-2, and AG News.
-- `experiments/utils/{flops,metrics,results,run_plan}.py` — experiment-side helpers for FLOP accounting, `RunResult` serialization, JSON IO, and run-plan/manifest utilities.
-- `scripts/tables/`, `scripts/plots/`, `scripts/report_*.py` — reporting scripts over archived result JSON files.
-- `tests/test_runtime_metrics.py` — runtime-metric derivation tests.
-- `data/`, `.hf_cache/` — local dataset/model/tokenization caches, gitignored.
-- `results/` — local run outputs written by the experiment runners; normally treated as scratch output and not used as the canonical reporting archive.
-- `archived_results/` — canonical archived run outputs that the reporting scripts read from; place or extract the archived bundle here. See [`archived_results/README.md`](archived_results/README.md).
-- `generated_artifacts/` — curated tables, CSV files, and figures used in the thesis and ICONIP 2026 paper. See [`generated_artifacts/README.md`](generated_artifacts/README.md).
-- `reproduced_artifacts/` — scratch output for locally regenerated tables and figures, kept separate so the curated files are not overwritten. See [`reproduced_artifacts/README.md`](reproduced_artifacts/README.md).
+- `experiments/`: CIFAR-100 and AG News runners; shared NLP utilities.
+- `experiments/utils/`: result serialization, runtime metrics, and precomputed CIFAR controls.
+- `scripts/paper/`: archive management, explicit result loading, analysis, tables, figures, audits, and training plans.
+- `scripts/run_cifar_attribution_controls.py`: existing multi-GPU control launcher.
+- `paper/`: run manifest and configurations, artifact registry, release metadata, table templates.
+- `tests/reference/`: numerical references captured before refactoring and values from the submitted paper.
+- `archived_results/iconip2026/`: downloaded, immutable raw results (ignored by Git).
+- `results/`: new training outputs (ignored by Git).
 
-## Reproducibility notes
+## Rerun training
 
-- Fixed run seeds and deterministic label-noise construction are used.
-- Seed handling, label-noise protocols, scheduler settings, reward shaping, and gradient-noise generator construction are defined by `pulseopt` and the experiment runners.
-- Newer result files log hardware/software metadata under `runtime_metrics.hardware`: GPU name(s) and memory, Python version, PyTorch and CUDA versions, cuDNN version, plus the runner's `num_workers` and `pin_memory` settings.
-- Some older archived result files predate that capture and may not contain a complete hardware/software metadata block.
-- Exact epoch-level or bitwise reproduction across machines is not guaranteed. GPU architecture, CUDA/cuDNN kernels, PyTorch/torchvision versions, and DataLoader/runtime behavior can introduce small trajectory differences.
-- For NLP experiments, tokenized datasets and HuggingFace model/tokenizer files should be cached before runtime-sensitive experiments. `--pretokenize-only` prepares tokenized datasets, and measured runs should use `--cache-dir`, `--tokenized-dataset-dir`, and `--local-files-only` once the required files are cached.
-- The `pulseopt` dependency is pinned through `pyproject.toml`; changing the pinned version changes the AEES implementation backing the runners.
-- Archived result files are treated as the authoritative source for the thesis tables and figures; the reporting scripts in `scripts/` consume them read-only.
-- Datasets and model/tokenizer caches are pulled into `.hf_cache/` and `data/` on first run. These directories are gitignored.
-- Checkpoints, raw logs, and bulk temporary outputs are not intended to be tracked in git.
+Training requires a separate, larger environment and suitable compute:
 
-## Library reference
+```sh
+uv sync --frozen --extra training --extra dev
+make train-plan
+uv run --frozen --extra training python -m scripts.paper.training \
+  --run-id cifar100_sym40_adamw_aees_seed0 --execute
+uv run --frozen --extra training python -m scripts.paper.training \
+  --run-id agnews_sym20_adamw_aees_seed0 --execute
+```
 
-The reusable `pulseopt` package contains the public AEES API, quick-start examples, and design notes:
+Without `--execute`, the planner only prints configurations and commands. It takes parameters from the released run manifest, including original schedule seeds. New runs use a separate results directory and never overwrite released outputs. Frequency-matched reruns use the four other released AEES traces as donors by default.
 
-- PyPI: <https://pypi.org/project/pulseopt/>
-- GitHub: <https://github.com/davidkfoss/pulseopt>
+CIFAR-100 downloads to `data/cifar100` when the runner first loads it. AG News downloads and tokenizes with Hugging Face; see [training and datasets](docs/training.md) for preparation, split seeds, cache behavior, and multi-GPU controls.
 
-## License
-
-MIT — see [LICENSE](LICENSE).
+See [artifact mapping and metric definitions](docs/reproduction.md), [provenance](docs/provenance.md), and [scientific discrepancies](docs/scientific_discrepancies.md). The original [thesis repository](https://github.com/davidkfoss/aees-thesis-experiments) retains SST-2 and the broader historical experiments. This repository preserves that Git ancestry but supports only the paper workflows.
