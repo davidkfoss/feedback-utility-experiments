@@ -13,4 +13,4 @@ These issues were identified before refactoring and are not methodological chang
 
 CIFAR's official test split is the reporting/selection validation split, with no untouched test estimate. AG News uses a fixed 90/10 split of the original training data, and the official test split does not supply paper metrics. Peak means the maximum logged validation accuracy, with the earliest maximizer used for peak epoch. Neither runner persists model checkpoint files; the paper's retrospective checkpoint-selection language refers to logged epoch outcomes.
 
-The supplied manuscript still links to `aees-thesis-experiments`. Update that link only after the paper repository and its results release have been published.
+The supplied manuscript still links to `aees-thesis-experiments`. The paper repository and its results release are now published at `https://github.com/davidkfoss/feedback-utility-experiments`; update the manuscript link when preparing the next paper revision.

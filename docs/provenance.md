@@ -25,4 +25,6 @@ make paper-bundle SOURCE_ROOT=/path/to/aees-thesis-experiments/archived_results
 
 This creates `dist/iconip2026-results-v1.zip` and its checksum sidecar. Packaging checks every source hash, fixes ZIP timestamps, sorts entries, and does not alter source files. Repeat builds from identical inputs produce the same archive bytes in the tested Python environment.
 
-The bundle is prepared for a new paper repository release. Publication is a separate step: create the GitHub repository, push the reviewed code, create a versioned release, attach the ZIP and checksum, and set `paper/release.json` to the actual immutable asset URL. Do not replace the thesis release or publish a guessed download URL. A supplied local bundle or `RESULTS_URL` override can exercise the complete fetch-and-reproduce workflow before publication; both must match the pinned archive hash.
+The published paper release is [iconip2026-v1](https://github.com/davidkfoss/feedback-utility-experiments/releases/tag/iconip2026-v1). `paper/release.json` pins its asset URL, archive size, and SHA-256. The thesis release remains unchanged. Future result revisions should receive a new archive name and release tag; do not replace the published asset in place.
+
+A supplied local bundle or `RESULTS_URL` override can exercise the same fetch-and-reproduce workflow; both must match the pinned archive hash. Regenerating artifacts from new training outputs is a separate analysis change and must not silently update the frozen paper references.
