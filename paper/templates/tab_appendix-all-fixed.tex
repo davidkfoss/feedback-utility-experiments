@@ -1,0 +1,21 @@
+\begin{table}[H]
+\centering
+\caption{Peak CIFAR-100 validation accuracy for every tested fixed
+learning-rate multiplier and AEES. Values are mean $\pm$ SD over five seeds.}
+\label{tab:appendix-all-fixed}
+\scriptsize
+\setlength{\tabcolsep}{3.0pt}
+\renewcommand{\arraystretch}{1.03}
+\begin{tabular}{llcccc}
+\toprule
+Noise & Optimizer & Fixed $0.5$ & Fixed $1.0$ & Fixed $2.0$ & AEES \\
+\midrule
+Asym. 20\% & AdamW & $@@v000@@\pm@@v001@@$ & $@@v002@@\pm@@v003@@$ & $@@v004@@\pm@@v005@@$ & $@@v006@@\pm@@v007@@$ \\
+Asym. 20\% & SGD+M & $@@v008@@\pm@@v009@@$ & $@@v010@@\pm@@v011@@$ & $@@v012@@\pm@@v013@@$ & $@@v014@@\pm@@v015@@$ \\
+Sym. 20\% & AdamW & $@@v016@@\pm@@v017@@$ & $@@v018@@\pm@@v019@@$ & $@@v020@@\pm@@v021@@$ & $@@v022@@\pm@@v023@@$ \\
+Sym. 20\% & SGD+M & $@@v024@@\pm@@v025@@$ & $@@v026@@\pm@@v027@@$ & $@@v028@@\pm@@v029@@$ & $@@v030@@\pm@@v031@@$ \\
+Sym. 40\% & AdamW & $@@v032@@\pm@@v033@@$ & $@@v034@@\pm@@v035@@$ & $@@v036@@\pm@@v037@@$ & $@@v038@@\pm@@v039@@$ \\
+Sym. 40\% & SGD+M & $@@v040@@\pm@@v041@@$ & $@@v042@@\pm@@v043@@$ & $@@v044@@\pm@@v045@@$ & $@@v046@@\pm@@v047@@$ \\
+\bottomrule
+\end{tabular}
+\end{table}

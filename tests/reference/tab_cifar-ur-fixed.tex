@@ -1,0 +1,36 @@
+\begin{table}[H]
+\centering
+\caption{CIFAR-100 peak validation accuracy: uniform random (UR) versus
+the retrospectively best fixed multiplier. Accuracies are mean $\pm$ SD
+over five paired seeds. $\Delta$ is UR minus fixed accuracy (pp), with
+95\% paired percentile-bootstrap intervals conditional on the selected
+multiplier. Wins count positive paired differences.}
+\label{tab:cifar-ur-fixed}
+\footnotesize
+\setlength{\tabcolsep}{2.2pt}
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}llccccc@{}}
+\toprule
+Noise & Optimizer & Best $m$ & Fixed (\%) & UR (\%) &
+$\Delta$ [95\% interval] & Wins \\
+\midrule
+\multirow{2}{*}{Asym. 20\%}
+& AdamW & $1.0$ & $58.45\pm0.37$ & $61.18\pm2.16$
+& $2.73\,[1.01,4.21]$ & $4/5$ \\
+& SGD+M & $0.5$ & $57.47\pm0.61$ & $63.09\pm0.94$
+& $5.62\,[4.95,6.11]$ & $5/5$ \\
+\midrule
+\multirow{2}{*}{Sym. 20\%}
+& AdamW & $0.5$ & $58.80\pm0.46$ & $62.59\pm0.53$
+& $3.80\,[3.13,4.47]$ & $5/5$ \\
+& SGD+M & $0.5$ & $57.45\pm0.65$ & $62.69\pm0.77$
+& $5.25\,[4.50,6.17]$ & $5/5$ \\
+\midrule
+\multirow{2}{*}{Sym. 40\%}
+& AdamW & $0.5$ & $52.48\pm0.74$ & $53.03\pm1.44$
+& $0.55\,[-0.26,1.22]$ & $4/5$ \\
+& SGD+M & $0.5$ & $50.85\pm0.73$ & $55.72\pm1.36$
+& $4.87\,[3.63,6.32]$ & $5/5$ \\
+\bottomrule
+\end{tabular*}
+\end{table}

@@ -1,0 +1,23 @@
+\begin{table}[H]
+\centering
+\caption{Episode-count ranges after Hamilton allocation for the
+frequency-matched CIFAR-100 schedules. Each entry gives the minimum
+and maximum count across five leave-one-seed-out target schedules;
+each schedule contains 391 episodes.}
+\label{tab:appendix-fm-ranges}
+\scriptsize
+\setlength{\tabcolsep}{4.0pt}
+\renewcommand{\arraystretch}{1.03}
+\begin{tabular}{llccc}
+\toprule
+Noise & Opt. & $m=0.5$ & $m=1$ & $m=2$ \\
+\midrule
+Asym. 20\% & AdamW & 261--269 & 85--94 & 36--37 \\
+Asym. 20\% & SGD+M & 308--311 & 44--46 & 36--37 \\
+Sym. 20\% & AdamW & 245--251 & 102--108 & 38--39 \\
+Sym. 20\% & SGD+M & 305--306 & 46--47 & 39 \\
+Sym. 40\% & AdamW & 235--250 & 101--115 & 40--41 \\
+Sym. 40\% & SGD+M & 298--299 & 50--51 & 42--43 \\
+\bottomrule
+\end{tabular}
+\end{table}

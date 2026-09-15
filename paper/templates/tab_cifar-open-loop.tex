@@ -1,0 +1,52 @@
+\begin{table}[thbp]
+\centering
+\caption{CIFAR-100 peak validation accuracy for AEES versus uniform-random
+(UR) and frequency-matched (FM) open-loop controls. Values are mean
+\(\pm\) SD over five paired seeds. \(\Delta\) is AEES minus control accuracy
+in pp; brackets give 95\% paired percentile-bootstrap intervals. Wins count
+positive paired differences. Asym. and Sym. denote asymmetric and symmetric
+training-label noise.}
+\label{tab:cifar-open-loop}
+\footnotesize
+\setlength{\tabcolsep}{2.2pt}
+\renewcommand{\arraystretch}{1.08}
+\begin{tabular*}{\linewidth}{@{\extracolsep{\fill}}lllcccc@{}}
+\toprule
+Noise & Optimizer & Control & AEES (\%) & Control (\%) &
+\(\Delta\) [95\% interval] & Wins \\
+\midrule
+\multirow{4}{*}{Asym. 20\%}
+& \multirow{2}{*}{AdamW}
+& UR & \multirow{2}{*}{\(@@v000@@\pm@@v001@@\)}
+& \(@@v002@@\pm@@v003@@\) & \(@@v004@@\,[@@v005@@,@@v006@@]\) & \(@@v007@@/@@v008@@\) \\
+& & FM & & \(@@v009@@\pm@@v010@@\) & \(@@v011@@\,[@@v012@@,@@v013@@]\) & \(@@v014@@/@@v015@@\) \\
+\cmidrule(lr){2-7}
+& \multirow{2}{*}{SGD+M}
+& UR & \multirow{2}{*}{\(@@v016@@\pm@@v017@@\)}
+& \(@@v018@@\pm@@v019@@\) & \(@@v020@@\,[@@v021@@,@@v022@@]\) & \(@@v023@@/@@v024@@\) \\
+& & FM & & \(@@v025@@\pm@@v026@@\) & \(@@v027@@\,[@@v028@@,@@v029@@]\) & \(@@v030@@/@@v031@@\) \\
+\midrule
+\multirow{4}{*}{Sym. 20\%}
+& \multirow{2}{*}{AdamW}
+& UR & \multirow{2}{*}{\(@@v032@@\pm@@v033@@\)}
+& \(@@v034@@\pm@@v035@@\) & \(@@v036@@\,[@@v037@@,@@v038@@]\) & \(@@v039@@/@@v040@@\) \\
+& & FM & & \(@@v041@@\pm@@v042@@\) & \(@@v043@@\,[@@v044@@,@@v045@@]\) & \(@@v046@@/@@v047@@\) \\
+\cmidrule(lr){2-7}
+& \multirow{2}{*}{SGD+M}
+& UR & \multirow{2}{*}{\(@@v048@@\pm@@v049@@\)}
+& \(@@v050@@\pm@@v051@@\) & \(@@v052@@\,[@@v053@@,@@v054@@]\) & \(@@v055@@/@@v056@@\) \\
+& & FM & & \(@@v057@@\pm@@v058@@\) & \(@@v059@@\,[@@v060@@,@@v061@@]\) & \(@@v062@@/@@v063@@\) \\
+\midrule
+\multirow{4}{*}{Sym. 40\%}
+& \multirow{2}{*}{AdamW}
+& UR & \multirow{2}{*}{\(@@v064@@\pm@@v065@@\)}
+& \(@@v066@@\pm@@v067@@\) & \(@@v068@@\,[@@v069@@,@@v070@@]\) & \(@@v071@@/@@v072@@\) \\
+& & FM & & \(@@v073@@\pm@@v074@@\) & \(@@v075@@\,[@@v076@@,@@v077@@]\) & \(@@v078@@/@@v079@@\) \\
+\cmidrule(lr){2-7}
+& \multirow{2}{*}{SGD+M}
+& UR & \multirow{2}{*}{\(@@v080@@\pm@@v081@@\)}
+& \(@@v082@@\pm@@v083@@\) & \(@@v084@@\,[@@v085@@,@@v086@@]\) & \(@@v087@@/@@v088@@\) \\
+& & FM & & \(@@v089@@\pm@@v090@@\) & \(@@v091@@\,[@@v092@@,@@v093@@]\) & \(@@v094@@/@@v095@@\) \\
+\bottomrule
+\end{tabular*}
+\end{table}

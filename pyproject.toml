@@ -3,26 +3,18 @@ requires = ["setuptools>=69", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "aees-thesis-experiments"
+name = "feedback-utility-experiments"
 version = "0.0.0"
-description = "Thesis experiments and reporting scripts for Adaptive Episodic Exploration Scheduling (AEES). Library lives in the `pulseopt` PyPI package."
+description = "Experiments and paper reproduction for Isolating Feedback Utility in Adaptive Optimizer Scheduling."
 readme = "README.md"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "David Kneringer Foss", email = "david.k.foss@gmail.com" }]
 requires-python = ">=3.11"
-dependencies = [
-    "pulseopt>=0.1.5",
-    "torch>=2.0",
-    "torchvision>=0.22",
-    "transformers>=4.52",
-    "datasets>=3.6",
-    "matplotlib>=3.10.9",
-    "numpy",
-    "scipy",
-]
+dependencies = ["matplotlib>=3.10.9", "numpy", "scipy"]
 
 [project.optional-dependencies]
+training = ["pulseopt==0.1.5", "torch>=2.0", "torchvision>=0.22", "transformers>=4.52", "datasets>=3.6"]
 dev = ["pytest>=8,<9"]
 
 [tool.setuptools]

@@ -1,0 +1,21 @@
+\begin{table}[H]
+\centering
+\caption{Complete AG News gradient-noise controls under 20\% symmetric
+training-label noise. Values are mean $\pm$ SD over five seeds; Drop is peak
+minus final validation accuracy in pp.}
+\label{tab:appendix-agnews-controls}
+\scriptsize
+\setlength{\tabcolsep}{3.2pt}
+\renewcommand{\arraystretch}{1.03}
+\begin{tabular}{lcccc}
+\toprule
+Policy & Peak (\%) & Final (\%) & Drop (pp) & Peak epoch \\
+\midrule
+Neutral, $\sigma=0$ & $93.19\pm0.19$ & $90.79\pm0.17$ & $2.40\pm0.28$ & $2.00\pm0.00$ \\
+Fixed, $\sigma=0.005$ & $93.55\pm0.07$ & $93.47\pm0.06$ & $0.09\pm0.08$ & $4.00\pm0.71$ \\
+Fixed, $\sigma=0.01$ & $93.40\pm0.10$ & $93.40\pm0.10$ & $0.00\pm0.00$ & $4.80\pm0.45$ \\
+Uniform random & $93.58\pm0.07$ & $93.58\pm0.06$ & $0.01\pm0.01$ & $4.80\pm0.45$ \\
+AEES & $93.47\pm0.09$ & $93.45\pm0.10$ & $0.01\pm0.02$ & $4.60\pm0.89$ \\
+\bottomrule
+\end{tabular}
+\end{table}

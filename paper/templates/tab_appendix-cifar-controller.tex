@@ -1,0 +1,22 @@
+\begin{table}[H]
+\centering
+\caption{AEES controller diagnostics on CIFAR-100, pooled over five seeds.
+Action shares and median clipped training-loss rewards are listed in
+multiplier order $(0.5,1,2)$.}
+\label{tab:appendix-cifar-controller}
+\scriptsize
+\setlength{\tabcolsep}{3.2pt}
+\renewcommand{\arraystretch}{1.05}
+\begin{tabular}{llcc}
+\toprule
+Noise & Opt. & Action shares & Median clipped reward \\
+\midrule
+Asym. 20\% & AdamW & (@@v000@@, @@v001@@, @@v002@@) & (@@v003@@, @@v004@@, @@v005@@) \\
+Asym. 20\% & SGD+M & (@@v006@@, @@v007@@, @@v008@@) & (@@v009@@, @@v010@@, @@v011@@) \\
+Sym. 20\% & AdamW & (@@v012@@, @@v013@@, @@v014@@) & (@@v015@@, @@v016@@, @@v017@@) \\
+Sym. 20\% & SGD+M & (@@v018@@, @@v019@@, @@v020@@) & (@@v021@@, @@v022@@, @@v023@@) \\
+Sym. 40\% & AdamW & (@@v024@@, @@v025@@, @@v026@@) & (@@v027@@, @@v028@@, @@v029@@) \\
+Sym. 40\% & SGD+M & (@@v030@@, @@v031@@, @@v032@@) & (@@v033@@, @@v034@@, @@v035@@) \\
+\bottomrule
+\end{tabular}
+\end{table}

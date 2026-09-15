@@ -6,6 +6,8 @@ import math
 
 import pytest
 
+pytest.importorskip("torch", reason="Optional training environment required")
+
 from experiments.utils import results as result_utils
 
 
@@ -14,10 +16,10 @@ def build_result_payload(**overrides: object) -> dict[str, object]:
 
     payload: dict[str, object] = {
         "method_name": "AdaptiveScheduler",
-        "task_name": "sst2",
+        "task_name": "agnews",
         "seed": 0,
         "model_name": "distilbert-base-uncased",
-        "dataset_name": "GLUE SST-2",
+        "dataset_name": "AG News",
         "config": {
             "batch_size": 16,
             "gradient_accumulation_steps": 2,
