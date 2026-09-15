@@ -16,6 +16,9 @@ proportions to visualize whether the controller settled on one arm.
 A centered rolling mean, with a window of roughly 5% of the episode count, is
 applied for display only. The summary file reports raw proportions. The smoothing
 preserves the columns-sum-to-1 property by averaging full episode slices.
+The AdamW-vs-SGD+M paper figure uses an 11-episode window by default.
+Use --smoothing-window to set an explicit positive odd window in episodes
+(1 disables smoothing). Explicit-window outputs have a _w<window> suffix.
 
 Typical reproduction commands:
     uv run python -m scripts.plots.controllers.plot_arm_selection \\
@@ -46,6 +49,7 @@ import traceback
 from typing import Any
 
 import numpy as np
+from matplotlib.transforms import Bbox
 
 from scripts.plots._common import (
     RunInfo,
@@ -92,6 +96,12 @@ SETTING_SPEC: dict[str, dict[str, Any]] = {
         "name": "arm_selection_cifar_sym40",
         "axes": ["lr"],
     },
+    "cifar_sym40_sgd": {
+        # Same layout as cifar_sym40 (AdamW) but for the SGD+M flagship, so
+        # the two optimizers' arm-selection behavior can be compared.
+        "name": "arm_selection_cifar_sym40_sgd",
+        "axes": ["lr"],
+    },
     "cifar_sym40_cosine": {
         # Same layout as cifar_sym40 but for the Cosine + AEES flagship.
         # Used to show that the controller's preferred arm pattern is
@@ -110,6 +120,17 @@ SETTING_SPEC: dict[str, dict[str, Any]] = {
         "component_settings": ["cifar_sym40", "cifar_sym40_cosine"],
         "panel_titles": ["AEES (no scheduler)", "Cosine + AEES"],
     },
+    "cifar_sym40_optimizer_paired": {
+        # LNCS-paper figure: AdamW vs SGD+M arm-selection trajectories,
+        # side-by-side with a single shared legend and paper-scale fonts.
+        # See _run_optimizer_paired for the dedicated layout.
+        "name": "arm_selection_cifar_sym40_optimizer_paired",
+        "axes": ["lr"],
+        "component_settings": ["cifar_sym40", "cifar_sym40_sgd"],
+        "panel_titles": ["AdamW", "SGD+M"],
+        "paper_style": True,
+        "smoothing_window": 11,
+    },
     "agnews_noisy": {
         # Two panels: σ axis on the left, LR axis on the right. Showing both
         # is critical for the AG News chapter — the σ-only view hid that the
@@ -125,8 +146,10 @@ SETTING_SPEC: dict[str, dict[str, Any]] = {
 # setting reads archived_results/noisy_agnews.
 SETTING_RUNS_SUBDIR: dict[str, str] = {
     "cifar_sym40": "cifar_noisy",
+    "cifar_sym40_sgd": "cifar_noisy",
     "cifar_sym40_cosine": "cifar_noisy",
     "cifar_sym40_paired": "cifar_noisy",
+    "cifar_sym40_optimizer_paired": "cifar_noisy",
     "agnews_noisy": "noisy_agnews",
 }
 
@@ -146,6 +169,20 @@ def _predicate_cifar_sym40(info: RunInfo, _record: dict[str, Any]) -> bool:
     if info.path is None:
         return False
     if info.path.name != "adamw_aees_ep200_lr05102":
+        return False
+    return True
+
+
+def _predicate_cifar_sym40_sgd(info: RunInfo, _record: dict[str, Any]) -> bool:
+    if info.task != "cifar100":
+        return False
+    if info.noise_setting != "sym40":
+        return False
+    if info.optimizer != "SGD":
+        return False
+    if info.path is None:
+        return False
+    if info.path.name != "sgd_aees_ep200_lr05102_base01":
         return False
     return True
 
@@ -184,6 +221,7 @@ def _predicate_agnews_noisy(info: RunInfo, record: dict[str, Any]) -> bool:
 
 PREDICATES = {
     "cifar_sym40": _predicate_cifar_sym40,
+    "cifar_sym40_sgd": _predicate_cifar_sym40_sgd,
     "cifar_sym40_cosine": _predicate_cifar_sym40_cosine,
     "agnews_noisy": _predicate_agnews_noisy,
 }
@@ -270,8 +308,12 @@ def _arm_fractions(
 # ---------------------------------------------------------------------------
 
 
-def _display_window(n_episodes: int) -> int:
-    """Window size (odd, ≥5) for centered rolling-mean smoothing."""
+def _display_window(n_episodes: int, requested_window: int | None = None) -> int:
+    """Use an explicit window or the default odd window of roughly 5%."""
+    if requested_window is not None:
+        if requested_window < 1 or requested_window % 2 == 0:
+            raise ValueError("smoothing window must be a positive odd integer")
+        return requested_window
     window = max(5, int(round(n_episodes * 0.05)))
     return window if window % 2 == 1 else window + 1
 
@@ -404,6 +446,11 @@ def _draw_per_arm_lines(
     arm_values: list[float],
     axis_spec: dict[str, Any],
     representative_record: dict[str, Any],
+    *,
+    show_title: bool = True,
+    label_fontsize: float | None = None,
+    tick_fontsize: float | None = None,
+    legend_fontsize: float = 8,
 ) -> None:
     """Per-arm cross-seed mean trajectory with ±1 SD band; uniform reference.
 
@@ -457,12 +504,18 @@ def _draw_per_arm_lines(
     # Uniform-random reference line. If the controller learns anything, lines
     # diverge from this line; if it does not, lines hug it.
 
-    ax.set_xlabel(x_label)
-    ax.set_ylabel("Per-episode selection fraction")
+    ax.set_xlabel(x_label, fontsize=label_fontsize)
+    ax.set_ylabel("Per-episode selection fraction", fontsize=label_fontsize)
     ax.set_xlim(*x_lim)
     ax.set_ylim(0.0, 1.0)
-    ax.set_title(axis_spec["axis_title"], fontsize=10, pad=8)
-    ax.legend(loc="upper right", frameon=False, fontsize=8)
+    if tick_fontsize is not None:
+        ax.tick_params(axis="both", labelsize=tick_fontsize)
+    if show_title:
+        ax.set_title(axis_spec["axis_title"], fontsize=10, pad=8)
+    ax.legend(
+        loc="upper right", bbox_to_anchor=(1.0, 1.04),
+        frameon=False, fontsize=legend_fontsize,
+    )
 
 
 def _draw_panel(
@@ -642,7 +695,7 @@ def _run_paired(args, spec: dict[str, Any], runs_root: pathlib.Path) -> int:
             fractions, n_episodes, seeds = _arm_fractions(
                 items, axis_spec["selected_values_key"], arm_values
             )
-            window = _display_window(n_episodes)
+            window = _display_window(n_episodes, args.smoothing_window)
             per_seed = _per_seed_smoothed_fractions(
                 items,
                 axis_spec["selected_values_key"],
@@ -713,6 +766,247 @@ def _run_paired(args, spec: dict[str, Any], runs_root: pathlib.Path) -> int:
     for comp, title in zip(per_component, panel_titles):
         summary_lines.append(
             f"=== Panel: {title} (component={comp['comp_key']}) ===")
+        summary_lines.append(f"n_seeds: {len(comp['seeds'])}")
+        summary_lines.append(f"n_episodes_after_truncation: {comp['n_episodes']}")
+        summary_lines.append(
+            f"smoothing_window (display only): {comp['window']} "
+            "(centered rolling mean)"
+        )
+        for info, _ in comp["items_sorted"]:
+            summary_lines.append(f"  - {_rel(info.path)} (seed={info.seed})")
+        overall, first_q, mid, last_q = _quarter_means(
+            comp["fractions"], comp["arm_values"]
+        )
+        summary_lines.append("")
+        summary_lines.append("Mean fraction per arm (raw, unsmoothed):")
+        for a_idx, a_val in enumerate(comp["arm_values"]):
+            summary_lines.append(
+                f"  arm {a_val:g}: overall={overall[a_idx]:.3f}  "
+                f"first25%={first_q[a_idx]:.3f}  middle50%={mid[a_idx]:.3f}  "
+                f"last25%={last_q[a_idx]:.3f}  "
+                f"drift(last-first)={last_q[a_idx] - first_q[a_idx]:+.3f}"
+            )
+        summary_lines.append("")
+
+    summary_lines.append("outputs:")
+    summary_lines.append(f"  - {pdf_path}")
+    summary_lines.append(f"  - {png_path}")
+    write_summary(args.out_dir, name, summary_lines)
+
+    print(f"wrote {pdf_path}")
+    print(f"wrote {png_path}")
+    return 0
+
+
+# LNCS-paper two-panel figure: fixed hue-separated colors, matching the order
+# used elsewhere in this file for the 3-arm LR axis (m=0.5, m=1.0, m=2.0).
+_PAPER_ARM_COLORS = ["#ff7f0e", "#1f77b4", "#d62728"]
+# Keep the multipliers identifiable when the figure is printed without color.
+_PAPER_ARM_LINESTYLES = ["-", "--", ":"]
+
+
+def _run_optimizer_paired(
+    args, spec: dict[str, Any], runs_root: pathlib.Path
+) -> int:
+    """Render the AdamW-vs-SGD+M arm-selection comparison for the LNCS paper.
+
+    Distinct from `_run_paired` (which compares AEES-alone vs Cosine+AEES on
+    a single optimizer): here the two panels are the same AEES-LR flagship on
+    two different optimizers, styled to fit the paper's column width, with a
+    single shared legend instead of a per-panel one. Reuses the exact same
+    fraction/smoothing pipeline (`_arm_fractions`, `_per_seed_smoothed_fractions`,
+    `_display_window`) as every other setting in this file, with an
+    11-episode default window and paper-specific drawing code.
+    """
+    name = spec["name"]
+    component_keys: list[str] = spec["component_settings"]
+    panel_titles: list[str] = spec["panel_titles"]
+    axis_key: str = spec["axes"][0]
+    axis_spec = AXIS_SPECS[axis_key]
+
+    try:
+        per_component: list[dict[str, Any]] = []
+        for comp_key in component_keys:
+            items = _load_runs(runs_root, comp_key)
+            if not items:
+                write_missing(
+                    args.out_dir, name,
+                    f"No flagship runs found for component '{comp_key}' "
+                    f"under {runs_root.resolve()}.\n",
+                )
+                return 1
+            items_sorted = sorted(
+                items, key=lambda iv: (
+                    iv[0].seed if iv[0].seed is not None else -1
+                )
+            )
+            ctrl_key = axis_spec["controller_logs_key"]
+            arm_value_sets = {
+                tuple(r["controller_logs"][ctrl_key]["arm_values"])
+                for _, r in items
+            }
+            if len(arm_value_sets) != 1:
+                raise ValueError(
+                    f"inconsistent {ctrl_key}.arm_values across seeds for "
+                    f"component '{comp_key}': {sorted(arm_value_sets)}"
+                )
+            (arm_values_tuple,) = arm_value_sets
+            arm_values = sorted(arm_values_tuple)
+
+            fractions, n_episodes, seeds = _arm_fractions(
+                items, axis_spec["selected_values_key"], arm_values
+            )
+            window = _display_window(
+                n_episodes,
+                args.smoothing_window if args.smoothing_window is not None
+                else spec.get("smoothing_window"),
+            )
+            per_seed = _per_seed_smoothed_fractions(
+                items,
+                axis_spec["selected_values_key"],
+                arm_values,
+                n_episodes,
+                window,
+            )
+            per_component.append({
+                "comp_key": comp_key,
+                "items_sorted": items_sorted,
+                "arm_values": arm_values,
+                "fractions": fractions,
+                "per_seed": per_seed,
+                "n_episodes": n_episodes,
+                "seeds": seeds,
+                "window": window,
+                "representative_record": items_sorted[0][1],
+            })
+
+        if len({tuple(c["arm_values"]) for c in per_component}) != 1:
+            raise ValueError(
+                "AdamW and SGD+M components must share identical arm_values "
+                f"for a shared legend: "
+                f"{[c['arm_values'] for c in per_component]}"
+            )
+
+        # No target physical size: the caller scales this PDF with
+        # width=\linewidth in LaTeX. Instead aim for a wide, compact
+        # composition (~2.7x wider than tall) so the plotting area stays
+        # wide rather than tall/narrow, with normal-scale (not oversized)
+        # type relative to the panels.
+        fig, axes = plt.subplots(1, 2, figsize=(9.5, 3.6), sharey=True)
+
+        line_handles: list[Any] | None = None
+        line_labels: list[str] | None = None
+        for ax, comp, title in zip(axes, per_component, panel_titles):
+            arm_values = comp["arm_values"]
+            per_seed = comp["per_seed"]
+            n_seeds = per_seed.shape[0]
+            mean = per_seed.mean(axis=0)
+            std = (per_seed.std(axis=0, ddof=1)
+                   if n_seeds > 1 else np.zeros_like(mean))
+
+            n_episodes = comp["n_episodes"]
+            total_epochs = comp["representative_record"].get("total_epochs")
+            if total_epochs and n_episodes >= 2:
+                eps_per_epoch = n_episodes / float(total_epochs)
+                x = np.arange(1, n_episodes + 1) / eps_per_epoch
+            else:
+                x = np.arange(1, n_episodes + 1, dtype=float)
+
+            handles = []
+            labels = []
+            for a_idx, (arm_val, color) in enumerate(
+                zip(arm_values, _PAPER_ARM_COLORS)
+            ):
+                lo = np.clip(mean[a_idx] - std[a_idx], 0.0, 1.0)
+                hi = np.clip(mean[a_idx] + std[a_idx], 0.0, 1.0)
+                ax.fill_between(x, lo, hi, color=color,
+                                alpha=0.18, linewidth=0, zorder=1)
+                label = axis_spec["arm_label_fmt"](arm_val)
+                line, = ax.plot(
+                    x, mean[a_idx], color=color, linewidth=1.5, zorder=3,
+                    linestyle=_PAPER_ARM_LINESTYLES[a_idx],
+                    label=label,
+                )
+                handles.append(line)
+                labels.append(label)
+            if line_handles is None:
+                line_handles, line_labels = handles, labels
+
+            ax.set_title(title, fontsize=13, pad=30)
+            ax.set_xlabel("Epoch", fontsize=12)
+            ax.set_xlim(0, 200)
+            ax.set_xticks([0, 50, 100, 150, 200])
+            ax.set_ylim(0.0, 1.0)
+            ax.set_yticks([0.0, 0.2, 0.4, 0.6, 0.8, 1.0])
+            ax.tick_params(axis="both", labelsize=11)
+            ax.grid(False)
+            ax.spines["top"].set_visible(False)
+            ax.spines["right"].set_visible(False)
+
+        axes[0].set_ylabel("Arm selection frequency", fontsize=12)
+        axes[1].set_ylabel("")
+        axes[1].tick_params(axis="y", labelleft=False)
+
+        fig.legend(
+            line_handles, line_labels,
+            loc="upper center", bbox_to_anchor=(0.5, 0.78),
+            ncol=len(line_labels), frameon=False, fontsize=11,
+            handlelength=2.4, columnspacing=1.2,
+        )
+
+        fig.subplots_adjust(top=0.68, bottom=0.16, left=0.07, right=0.99, wspace=0.12)
+    except Exception as exc:
+        reason = (
+            f"Failed to build {name}.\n\n"
+            f"Exception: {exc!r}\n\n"
+            f"Traceback:\n```\n{traceback.format_exc()}```\n"
+        )
+        write_missing(args.out_dir, name, reason)
+        return 1
+
+    out_dir = pathlib.Path(args.out_dir)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    pdf_path = out_dir / f"{name}.pdf"
+    png_path = out_dir / f"{name}.png"
+    # Plain bbox_inches="tight" clips the first glyphs of the rotated
+    # y-axis label on the left edge for this figure (the auto-computed tight
+    # bbox under-measures rotated-text extent when a fig-level legend is
+    # also present). Compute the tight bbox explicitly and pad only the
+    # left side generously; other sides get a small uniform pad.
+    fig.canvas.draw()
+    tight_bbox = fig.get_tightbbox(fig.canvas.get_renderer())
+    pad_small = 0.03
+    pad_left = 0.18
+    export_bbox = Bbox.from_extents(
+        tight_bbox.x0 - pad_left, tight_bbox.y0 - pad_small,
+        tight_bbox.x1 + pad_small, tight_bbox.y1 + pad_small,
+    )
+    fig.savefig(pdf_path, bbox_inches=export_bbox)
+    fig.savefig(png_path, bbox_inches=export_bbox)
+    plt.close(fig)
+
+    repo_root = pathlib.Path(__file__).resolve().parents[3]
+
+    def _rel(p: pathlib.Path) -> str:
+        try:
+            return str(p.resolve().relative_to(repo_root))
+        except ValueError:
+            return str(p.resolve())
+
+    summary_lines: list[str] = []
+    summary_lines.append(f"runs-root: {_rel(runs_root)}")
+    summary_lines.append(f"setting: {spec['name']}")
+    summary_lines.append(f"component_settings: {component_keys}")
+    summary_lines.append("")
+    for comp, title in zip(per_component, panel_titles):
+        summary_lines.append(
+            f"=== Panel: {title} (component={comp['comp_key']}) ===")
+        summary_lines.append(f"n_seeds: {len(comp['seeds'])}")
+        summary_lines.append(f"n_episodes_after_truncation: {comp['n_episodes']}")
+        summary_lines.append(
+            f"smoothing_window (display only): {comp['window']} "
+            "(centered rolling mean)"
+        )
         for info, _ in comp["items_sorted"]:
             summary_lines.append(f"  - {_rel(info.path)} (seed={info.seed})")
         overall, first_q, mid, last_q = _quarter_means(
@@ -742,7 +1036,9 @@ def _run_paired(args, spec: dict[str, Any], runs_root: pathlib.Path) -> int:
 def _run_setting(
     args: argparse.Namespace, setting: str, runs_root: pathlib.Path
 ) -> int:
-    spec = SETTING_SPEC[setting]
+    spec = dict(SETTING_SPEC[setting])
+    if args.smoothing_window is not None:
+        spec["name"] += f"_w{args.smoothing_window}"
     name = spec["name"]
     axis_keys: list[str] = spec["axes"]
 
@@ -750,6 +1046,8 @@ def _run_setting(
     # render their per-arm-lines into a shared two-panel figure. Bypasses
     # the per-axis loop used by the other settings.
     if "component_settings" in spec:
+        if spec.get("paper_style"):
+            return _run_optimizer_paired(args, spec, runs_root)
         return _run_paired(args, spec, runs_root)
 
     try:
@@ -787,7 +1085,7 @@ def _run_setting(
             fractions, n_episodes, seeds = _arm_fractions(
                 items, axis_spec["selected_values_key"], arm_values
             )
-            window = _display_window(n_episodes)
+            window = _display_window(n_episodes, args.smoothing_window)
             display_fractions = _centered_rolling_mean(fractions, window)
 
             per_axis[axis_key] = {
@@ -808,7 +1106,9 @@ def _run_setting(
         # *does* learn a preference. agnews_noisy keeps the stacked-area
         # display because its story is that the bands stay roughly equal
         # across all arms.
-        use_lines = setting in ("cifar_sym40", "cifar_sym40_cosine")
+        use_lines = setting in (
+            "cifar_sym40", "cifar_sym40_sgd", "cifar_sym40_cosine",
+        )
 
         for ax, axis_key in zip(panels, axis_keys):
             entry = per_axis[axis_key]
@@ -820,12 +1120,20 @@ def _run_setting(
                     entry["n_episodes"],
                     entry["window"],
                 )
+                # The single-panel cifar_sym40 figure has no companion panel,
+                # so the axis title is redundant with the caption; drop it
+                # and size up the remaining text for print readability.
+                single_panel = len(axis_keys) == 1
                 _draw_per_arm_lines(
                     ax,
                     per_seed,
                     entry["arm_values"],
                     entry["axis_spec"],
                     representative_record,
+                    show_title=not single_panel,
+                    label_fontsize=14 if single_panel else None,
+                    tick_fontsize=12 if single_panel else None,
+                    legend_fontsize=13 if single_panel else 8,
                 )
             else:
                 _draw_panel(
@@ -885,7 +1193,7 @@ def _run_setting(
         summary_lines.append(f"arm_values: {arm_values}")
         summary_lines.append(
             f"smoothing_window (display only): {entry['window']} "
-            f"(centered rolling mean, ≈5% of episodes)"
+            "(centered rolling mean)"
         )
 
         overall, first_q, mid, last_q = _quarter_means(fractions, arm_values)
@@ -943,7 +1251,18 @@ def main(argv: list[str] | None = None) -> int:
         "--setting", choices=sorted(SETTING_SPEC.keys()), default=None,
         help="Which setting to plot. Omit to emit all settings.",
     )
+    parser.add_argument(
+        "--smoothing-window", type=int, default=None,
+        help="Centered moving-average window in episodes: a positive odd "
+             "integer, or 1 for no smoothing. Default: 11 episodes for "
+             "cifar_sym40_optimizer_paired; approximately 5%% of episodes "
+             "otherwise. Adds _w<window> to output filenames.",
+    )
     args = parser.parse_args(argv)
+    if args.smoothing_window is not None and (
+        args.smoothing_window < 1 or args.smoothing_window % 2 == 0
+    ):
+        parser.error("--smoothing-window must be a positive odd integer")
 
     settings = [args.setting] if args.setting else sorted(SETTING_SPEC.keys())
     rc = 0
