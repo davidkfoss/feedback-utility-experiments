@@ -28,3 +28,7 @@ This creates `dist/iconip2026-results-v1.zip` and its checksum sidecar. Packagin
 The published paper release is [iconip2026-v1](https://github.com/davidkfoss/feedback-utility-experiments/releases/tag/iconip2026-v1). `paper/release.json` pins its asset URL, archive size, and SHA-256. The thesis release remains unchanged. Future result revisions should receive a new archive name and release tag; do not replace the published asset in place.
 
 A supplied local bundle or `RESULTS_URL` override can exercise the same fetch-and-reproduce workflow; both must match the pinned archive hash. Regenerating artifacts from new training outputs is a separate analysis change and must not silently update the frozen paper references.
+
+## Controller version correction
+
+The author confirmed pulseopt 0.3.0 as the paper version. The initial paper repository inherited a 0.1.5 pin from the local environment; the corrected pin is 0.3.0. Raw results and their checksums remain unchanged. The CIFAR runner no longer passes the unsupported `total_training_steps` keyword to `StructuredEpisodeManager`; the original argument only affected a historical context mode outside the paper. Horizon calculations and frequency-matched schedule construction still use the complete training step count.

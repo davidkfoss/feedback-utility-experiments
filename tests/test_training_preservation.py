@@ -74,3 +74,33 @@ def test_tiny_nlp_updates_and_partial_episode_match_original(monkeypatch):
             ],
         )
         equal(run_toy(nlp_common), reference)
+
+
+def test_paper_cifar_components_construct_with_published_pulseopt(monkeypatch):
+    from scripts.paper.records import DATA, donor_view
+
+    if not DATA.exists():
+        pytest.skip("Released donor traces required for FM component check")
+    from pulseopt import __version__
+
+    assert __version__ == "0.3.0"
+    entries = [
+        r
+        for r in manifest()["runs"]
+        if r["dataset"] == "cifar100" and r["regime"] == "sym40" and r["seed"] == 0
+    ]
+    with donor_view() as traces:
+        for entry in entries:
+            cmd = command(entry, Path("/tmp/unused-result.json"), traces)
+            monkeypatch.setattr(sys, "argv", [cmd[2], *cmd[3:]])
+            config = task_cifar100.parse_args()
+            model = torch.nn.Linear(2, 1)
+            components = task_cifar100.build_method_components(
+                config, model, total_training_steps=78200
+            )
+            if entry["policy"] == "fixed10":
+                assert components.episode_manager is None
+            else:
+                assert components.episode_manager is not None
+                mode = components.episode_manager.on_step_start(0)
+                assert mode.lr_multiplier in (0.5, 1.0, 2.0)

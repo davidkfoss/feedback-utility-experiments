@@ -463,7 +463,7 @@ requires-dist = [
     { name = "datasets", marker = "extra == 'training'", specifier = ">=3.6" },
     { name = "matplotlib", specifier = ">=3.10.9" },
     { name = "numpy" },
-    { name = "pulseopt", marker = "extra == 'training'", specifier = "==0.1.5" },
+    { name = "pulseopt", marker = "extra == 'training'", specifier = "==0.3.0" },
     { name = "pytest", marker = "extra == 'dev'", specifier = ">=8,<9" },
     { name = "scipy" },
     { name = "torch", marker = "extra == 'training'", specifier = ">=2.0" },
@@ -1667,14 +1667,14 @@ wheels = [
 
 [[package]]
 name = "pulseopt"
-version = "0.1.5"
+version = "0.3.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "torch" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/16/41/7319964a3a0e9ce21cf249baadfbedfce21bb3cb66f3c7d14754e5b79c6c/pulseopt-0.1.5.tar.gz", hash = "sha256:7d7a7b7351b3d80f71f7a6d3080c42633e30a33350d5d1efdb9171b7d95520fc", size = 30137, upload-time = "2026-05-06T01:03:59.802Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/e7/ca/f0637b87ba31358c5d81fe5ece6f68059af6a53ac8ace8917aff62dd252e/pulseopt-0.3.0.tar.gz", hash = "sha256:a3cc1f74c246aa77287a4cd5fa0fadb1cb91451de216e9dfe0dfa4658da412f1", size = 33756, upload-time = "2026-05-11T01:34:46.905Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/74/71/627dcde945d1acab3b885ada7347a027997d5a37370c21d9c43088d2fe5c/pulseopt-0.1.5-py3-none-any.whl", hash = "sha256:5474fe7840c5fcb986f2e44fc61212695f7eb299c2e56ff1e501b40015d988d1", size = 23726, upload-time = "2026-05-06T01:03:57.736Z" },
+    { url = "https://files.pythonhosted.org/packages/b9/c5/c79c96e405ea8169a0a606b52338623314ecc9031fbe1ebdc5f44cd18a67/pulseopt-0.3.0-py3-none-any.whl", hash = "sha256:f8fa6c61a7b1bdf6e9cf4799cb2c3aa849adac47a577cac0afd9debdba552ec9", size = 23460, upload-time = "2026-05-11T01:34:45.559Z" },
 ]
 
 [[package]]

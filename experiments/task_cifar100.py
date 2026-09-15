@@ -937,7 +937,6 @@ def build_method_components(
         context_trend_window=config.context_trend_window,
         context_trend_epsilon=config.context_trend_epsilon,
         ema_alpha=config.ema_alpha,
-        total_training_steps=total_training_steps,
     )
     return TrainingComponents(
         optimizer=optimizer,

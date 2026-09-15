@@ -16,3 +16,7 @@ Validated locally on 2026-09-15 before publication:
 Analysis packages: NumPy 2.4.3, SciPy 1.17.1, Matplotlib 3.10.9, Python 3.11.15. Training checks used pulseopt 0.1.5 and Torch 2.10.0. This documents validation of the refactor; it does not establish unknown historical training environments.
 
 Run `make paper-check` to repeat the data and analysis checks. Install the optional `training` extra to include the training tests. Archive/file checksums and generation metadata are machine-readable in `paper/` and `reproduced_artifacts/iconip2026/`.
+
+## Verification with the corrected paper dependency
+
+After the author confirmed pulseopt 0.3.0, the dependency pin was corrected and the published PyPI wheel was inspected (SHA-256 `f8fa6c61a7b1bdf6e9cf4799cb2c3aa849adac47a577cac0afd9debdba552ec9`). All **26 tests passed** with that package, including the existing numerical and NLP-update regressions and a new CIFAR component-construction check covering every paper policy and both optimizers. The deprecated optimizer wrappers remain available in 0.3.0; their deprecation warnings do not indicate test failures. The results ZIP and its checksum are unchanged.

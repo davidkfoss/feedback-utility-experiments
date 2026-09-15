@@ -2,7 +2,7 @@
 
 Code and released experiment outputs for the ICONIP 2026 paper. We compare AEES with fixed, uniform-random, and cross-fitted frequency-matched controls to isolate the additional benefit of training-loss feedback.
 
-The paper covers CIFAR-100 (ResNet-18, AdamW and SGD with momentum) and AG News (DistilBERT). All accuracy comparisons use paired seeds 0–4. The controller and adaptive optimizer implementation belongs to [pulseopt](https://github.com/davidkfoss/pulseopt); this repository provides experiment runners, controls, audits, and paper reproduction.
+The paper covers CIFAR-100 (ResNet-18, AdamW and SGD with momentum) and AG News (DistilBERT). All accuracy comparisons use paired seeds 0–4. The paper uses `pulseopt==0.3.0`. The controller and adaptive optimizer implementation belongs to [pulseopt](https://github.com/davidkfoss/pulseopt); this repository provides experiment runners, controls, audits, and paper reproduction.
 
 ## Reproduce figures and tables
 

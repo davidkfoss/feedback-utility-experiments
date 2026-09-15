@@ -2,7 +2,7 @@
 
 `paper/experiments.json` records every selected run's original path, checksum, paired seed, policy, and training configuration. The planner reads these explicit settings; it does not infer policies from result filenames. It covers 180 CIFAR-100 runs and 25 AG News runs.
 
-Install `uv sync --frozen --extra training --extra dev`. Training chooses CUDA when available, otherwise CPU; full CIFAR/DistilBERT experiments are expensive. The analysis-only installation excludes Torch, Transformers, Datasets, and pulseopt.
+Install `uv sync --frozen --extra training --extra dev`. The paper dependency is pinned to `pulseopt==0.3.0`. The runners retain its available optimizer-wrapper API to preserve behavior; migrating to the newer high-level API is separate work. Training chooses CUDA when available, otherwise CPU; full CIFAR/DistilBERT experiments are expensive. The analysis-only installation excludes Torch, Transformers, Datasets, and pulseopt.
 
 ## CIFAR-100
 
