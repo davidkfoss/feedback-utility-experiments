@@ -1,8 +1,8 @@
 """CIFAR-100 (40% symmetric label noise) validation trajectories.
 
 Two side-by-side panels with shared y-axis showing per-epoch validation
-accuracy (mean +/- std over 5 seeds) for four schedules:
-    Flat, Cosine, AEES, Cosine + AEES
+accuracy (mean +/- std over 5 seeds) for two schedules:
+    Constant, AEES
 on AdamW (left) and SGD+M (right).
 
 Each method gets a hollow-circle marker at its mean peak and a filled-square
@@ -50,15 +50,20 @@ from scripts.plots._style import (
 # Spec: methods (in legend order) and panels (in column order).
 # ---------------------------------------------------------------------------
 
-METHODS = ["flat", "cosine", "aees_lr", "cosine_aees"]
+METHODS = ["flat", "aees_lr"]
 # In the CIFAR-noisy chapter prose the LR-only AEES variant is referred to as
 # just "AEES"; keep the visual continuity with chapter 5 by overriding LABEL
-# for "aees_lr" within this figure only.
+# for "aees_lr" within this figure only. "flat" is likewise displayed as
+# "Constant" here (rather than the global "Flat") to match the paper prose.
 DISPLAY_LABEL = {
-    "flat": LABEL["flat"],
-    "cosine": LABEL["cosine"],
+    "flat": "Constant",
     "aees_lr": "AEES",
-    "cosine_aees": LABEL["cosine_aees"],
+}
+# "flat"/Constant is displayed in blue here (rather than the global palette's
+# gray) now that Cosine no longer shares this figure's blue.
+DISPLAY_COLOR = {
+    "flat": "#1f77b4",
+    "aees_lr": PALETTE["aees_lr"],
 }
 
 PANELS = [("AdamW", "AdamW"), ("SGD", "SGD+M")]
@@ -179,22 +184,19 @@ def _build_figure(
             # curves so the band's width reflects between-seed variability
             # at the same smoothing scale as the mean line.
             std_smooth = mat_smooth.std(axis=0, ddof=1) * 100.0  # sample std
-            color = PALETTE[variant_key]
+            color = DISPLAY_COLOR[variant_key]
             label = DISPLAY_LABEL[variant_key]
 
             is_flat = variant_key == "flat"
             if is_flat:
-                # De-emphasized baseline: faint band, thin line. Markers are
-                # still drawn (with reduced prominence) so the reader can
-                # cross-reference Flat's peak/final positions against the
-                # scheduled methods; see _build_figure pass 2.
+                # ±1 SD band underneath the mean line.
                 ax.fill_between(
                     x, mean_smooth - std_smooth, mean_smooth + std_smooth,
                     color=color, alpha=0.08, linewidth=0, zorder=1,
                 )
                 line, = ax.plot(
                     x, mean_smooth,
-                    color=color, alpha=0.55, linewidth=1.1, zorder=2,
+                    color=color, alpha=1.0, linewidth=1.5, zorder=2,
                     label=label,
                 )
             else:
@@ -205,7 +207,7 @@ def _build_figure(
                 )
                 line, = ax.plot(
                     x, mean_smooth,
-                    color=color, linewidth=1.8, zorder=3,
+                    color=color, linewidth=1.5, zorder=3,
                     label=label,
                 )
 
@@ -219,34 +221,33 @@ def _build_figure(
                 legend_labels.append(label)
                 seen_methods.add(variant_key)
 
-        ax.set_title(opt_title)
-        ax.set_xlabel("Epoch")
+        ax.set_title(opt_title, fontsize=15)
+        ax.set_xlabel("Epoch", fontsize=13)
+        ax.tick_params(axis="both", labelsize=11)
         ax.set_xlim(1, max(T for _m, _s, T in cells.values()))
 
     # Pass 2: peak/final markers with white halo, drawn on top of every line.
-    # Flat markers are drawn first (lower zorder) and with reduced alpha so
-    # they sit subordinately behind any overlapping scheduled-method marker
-    # (in this figure, Flat and Cosine peak at essentially the same point on
-    # both optimizers, so Cosine's peak ring will hide Flat's — addressed in
-    # the caption).
+    # Flat markers are drawn first (lower zorder) so they sit subordinately
+    # behind any overlapping scheduled-method marker (in this figure, Flat
+    # and Cosine peak at essentially the same point on both optimizers, so
+    # Cosine's peak ring will hide Flat's — addressed in the caption).
     halo = pe.withStroke(linewidth=3.0, foreground="white")
     # Stable two-pass order: Flat first, then scheduled methods.
     marker_jobs.sort(key=lambda j: 0 if j[6] else 1)
     for ax, peak_epoch, peak_acc, T, final_acc, color, is_flat in marker_jobs:
-        marker_alpha = 0.55 if is_flat else 1.0
         peak_z = 4 if is_flat else 6
         final_z = 4 if is_flat else 5
         ax.plot(
             peak_epoch, peak_acc, marker="o",
             markerfacecolor="none", markeredgecolor=color,
             markersize=8, markeredgewidth=1.8,
-            linestyle="none", zorder=peak_z, alpha=marker_alpha,
+            linestyle="none", zorder=peak_z, alpha=1.0,
             path_effects=[halo],
         )
         ax.plot(
             T, final_acc, marker="s",
             color=color, markeredgecolor="black", markeredgewidth=0.6,
-            markersize=6, linestyle="none", zorder=final_z, alpha=marker_alpha,
+            markersize=6, linestyle="none", zorder=final_z, alpha=1.0,
             path_effects=[halo],
         )
 
@@ -258,7 +259,7 @@ def _build_figure(
     for ax in axes:
         ax.set_ylim(30.0, cur_top)
 
-    axes[0].set_ylabel("Validation accuracy (%)")
+    axes[0].set_ylabel("Validation accuracy (%)", fontsize=13)
 
     # Explain the peak/final markers in the legend so the reader doesn't
     # have to infer them from the shapes alone.
@@ -286,6 +287,7 @@ def _build_figure(
         ncol=len(all_labels),
         bbox_to_anchor=(0.5, -0.02),
         frameon=False,
+        fontsize=12,
     )
     fig.subplots_adjust(bottom=0.22, wspace=0.08)
     return fig
