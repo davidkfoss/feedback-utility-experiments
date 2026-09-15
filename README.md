@@ -14,13 +14,13 @@ make paper-reproduce
 make paper-check
 ```
 
-The paper results bundle is prepared locally under `dist/`; its publication status and checksum are recorded in `paper/release.json`. Until published, pass the bundle explicitly on another machine:
+The [paper results release](https://github.com/davidkfoss/feedback-utility-experiments/releases/tag/iconip2026-v1) contains the 205 runs underlying the paper. `make paper-reproduce` downloads the pinned ZIP, verifies the archive and every result, and generates the artifacts. If results are already present, it verifies and reuses them. The archive stores every run at its root, including the RunPod controls. Reproduction does not download datasets or model weights and does not run training.
+
+For an offline copy, supply the same verified bundle explicitly:
 
 ```sh
 make paper-reproduce ARCHIVE=/path/to/iconip2026-results-v1.zip
 ```
-
-After publication, the same target downloads the configured release asset and verifies the ZIP and all 205 files. If results are already present, it verifies and reuses them. The archive stores every run at its root, including the RunPod controls. Reproduction does not download datasets or model weights and does not run training.
 
 ```sh
 make paper-artifacts  # existing results, offline

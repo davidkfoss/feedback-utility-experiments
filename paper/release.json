@@ -1,9 +1,10 @@
 {
   "schema_version": 1,
-  "status": "prepared_not_published",
+  "status": "published",
   "asset": "iconip2026-results-v1.zip",
   "sha256": "3af3a4ddd387de4bb022d2f859a874dc270807bf7a9fbc2229ba1ad3f33e0bd2",
   "size_bytes": 41989056,
   "run_count": 205,
-  "url": null
+  "url": "https://github.com/davidkfoss/feedback-utility-experiments/releases/download/iconip2026-v1/iconip2026-results-v1.zip",
+  "tag": "iconip2026-v1"
 }
